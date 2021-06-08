@@ -1,15 +1,17 @@
 import keras
+from keras import layers
 import matplotlib.pyplot as plt
 import numpy as np 
 import utils
+import cv2
 
 crop_width = 256
 crop_height = 256
 
-def data_generator(x_train, y_train, batch_size=4, use_shuffle=True, use_random_crop=True):
-    # x_train and x_train are 4d tensor (none, height, width, channel)
-    train_size = x_train.shape[0]
-    train_full_index = np.arange(0, train_size)
+def data_generator_from_path(x_train, y_train, batch_size=4, use_shuffle=True, use_random_crop=True):
+   
+    train_full_index = list(x_train.keys())
+    train_size = len(train_full_index)
     total_batch = train_size // batch_size - 1
 
     current_batch = 0
@@ -34,8 +36,8 @@ def data_generator(x_train, y_train, batch_size=4, use_shuffle=True, use_random_
 
             for i in range(batch_size):  
                 batch_mask_index = batch_mask[i]              
-                x_img = x_train[batch_mask_index]
-                y_img = y_train[batch_mask_index]
+                x_img = cv2.imread(x_train[batch_mask_index]) / 255.0
+                y_img = cv2.imread(y_train[batch_mask_index]) / 255.0
                 crop_x, crop_y = utils.get_random_crop_coordinate(x_img, crop_width, crop_height)
                 cropped_x_img = utils.crop_image(x_img, crop_x, crop_y, crop_width, crop_height)
                 cropped_y_img = utils.crop_image(y_img, crop_x, crop_y, crop_width, crop_height)
@@ -46,10 +48,11 @@ def data_generator(x_train, y_train, batch_size=4, use_shuffle=True, use_random_
                 x_batch[i] = cropped_x_img
                 y_batch[i] = cropped_y_img
         else:
-            x_batch = x_train[batch_mask]
-            y_batch = y_train[batch_mask]
+            x_batch = cv2.imread(x_train[batch_mask])
+            y_batch = cv2.imread(y_train[batch_mask])
 
 
         yield x_batch, y_batch
         
         current_batch += 1
+
