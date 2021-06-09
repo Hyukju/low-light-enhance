@@ -109,6 +109,11 @@ def train(epochs=100, batch_size=10):
     num_train_data = len(x_train)
     num_val_data = len(x_val)
 
+    print('num of train data = ', num_train_data)
+    print('num of val data = ', num_train_data)
+    print('batch size = ', batch_size)
+    print('epochs = ', epochs)
+
     model = buil_model(None, None, 3)
     model.compile(optimizer='adam', loss='mse', metrics=['acc'])
     model.fit_generator(train_generator, 
@@ -116,6 +121,8 @@ def train(epochs=100, batch_size=10):
                         epochs=epochs, 
                         validation_data=val_generator,
                         validation_steps=num_val_data//batch_size)
+    
+    return model, x_test, y_test
 
 
 if __name__=='__main__':
