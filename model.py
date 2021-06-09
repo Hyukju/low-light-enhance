@@ -11,8 +11,8 @@ crop_height = 256
 def data_generator_from_path(x_train, y_train, batch_size=4, use_shuffle=True, use_random_crop=True):
    
     # train_full_index = list(x_train.keys())
-    train_full_index = len(x_train)
-    train_size = len(train_full_index)
+    train_size = len(x_train)
+    train_full_index = np.arange(train_size)
     total_batch = train_size // batch_size - 1
 
     current_batch = 0
@@ -25,7 +25,7 @@ def data_generator_from_path(x_train, y_train, batch_size=4, use_shuffle=True, u
         if use_shuffle and current_batch == 0:
                 # shuffle train ids
                 np.random.shuffle(train_full_index)
-                print('batch full_ data shuffling')
+                #print('batch full_ data shuffling')
         
         current_index = current_batch * batch_size
         batch_mask = train_full_index[current_index:current_index + batch_size]
@@ -58,9 +58,9 @@ def data_generator_from_path(x_train, y_train, batch_size=4, use_shuffle=True, u
         current_batch += 1
 
 
-def buil_model():
+def buil_model(height, width, channel):
 
-    input_img = keras.Input(shape=(None, None, 3))
+    input_img = keras.Input(shape=(height, width, channel))
 
     x = layers.Conv2D(16, (3, 3), activation='relu', padding='same')(input_img)
     x = layers.MaxPooling2D((2, 2), padding='same')(x)
@@ -69,45 +69,59 @@ def buil_model():
     x = layers.Conv2D(8, (3, 3), activation='relu', padding='same')(x)
     encoded = layers.MaxPooling2D((2, 2), padding='same')(x)
 
-    # at this point the representation is (4, 4, 8) i.e. 128-dimensional
-
     x = layers.Conv2D(8, (3, 3), activation='relu', padding='same')(encoded)
     x = layers.UpSampling2D((2, 2))(x)
     x = layers.Conv2D(8, (3, 3), activation='relu', padding='same')(x)
     x = layers.UpSampling2D((2, 2))(x)
-    x = layers.Conv2D(16, (3, 3), activation='relu')(x)
+    x = layers.Conv2D(16, (3, 3), activation='relu',padding='same')(x)
     x = layers.UpSampling2D((2, 2))(x)
-    decoded = layers.Conv2D(1, (3, 3), activation='sigmoid', padding='same')(x)
+    decoded = layers.Conv2D(3, (3, 3), activation='sigmoid', padding='same')(x)
 
     autoencoder = keras.Model(input_img, decoded)
 
+    autoencoder.summary()
+
     return autoencoder
 
-def train():
+def train(epochs=100, batch_size=10):    
 
     x_data, y_data = utils.load_dataset_sice()
     
     data_keys = list(x_data.keys())
 
-    length = len(x_data)
-    num_train = int(length * 0.7)
-    num_val = int(length * 0.9)
+    num_data = len(x_data)
+    last_index_train = int(num_data * 0.7)
+    last_index_val = int(num_data * 0.9)
 
-    x_train = [x_data[i] for i in data_keys[:num_train]]
-    y_train = [y_data[i] for i in data_keys[:num_train]]
+    x_train = [x_data[i] for i in data_keys[:last_index_train]]
+    y_train = [y_data[i] for i in data_keys[:last_index_train]]
 
-    x_val = [x_data[i] for i in data_keys[num_train: num_val]]
-    y_val = [x_data[i] for i in data_keys[num_train: num_val]]
+    x_val = [x_data[i] for i in data_keys[last_index_train: last_index_val]]
+    y_val = [y_data[i] for i in data_keys[last_index_train: last_index_val]]
 
-    x_test = [x_data[i] for i in data_keys[num_val: -1]]
-    y_test = [y_data[i] for i in data_keys[num_val: -1]]
+    x_test = [x_data[i] for i in data_keys[last_index_val: -1]]
+    y_test = [y_data[i] for i in data_keys[last_index_val: -1]]
 
-    train_generator = data_generator_from_path(x_train, y_train)
-    val_generator = data_generator_from_path(x_val, y_val)
+    train_generator = data_generator_from_path(x_train, y_train, batch_size=batch_size)
+    val_generator = data_generator_from_path(x_val, y_val, batch_size=batch_size)
 
-    model = buil_model()
+    #
+    num_train_data = len(x_train)
+    num_val_data = len(x_val)
+
+    model = buil_model(None, None, 3)
     model.compile(optimizer='adam', loss='mse', metrics=['acc'])
-    model.fit_generator(train_generator, steps_per_epoch=10, epochs=3, validation_data=val_generator,validation_steps=3)
+    model.fit_generator(train_generator, 
+                        steps_per_epoch=num_train_data//batch_size, 
+                        epochs=epochs, 
+                        validation_data=val_generator,
+                        validation_steps=num_val_data//batch_size)
+
+
+if __name__=='__main__':
+    train()
+    
+    
 
 
 
