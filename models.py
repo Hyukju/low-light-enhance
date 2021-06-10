@@ -197,7 +197,7 @@ def train(epochs=100, batch_size=10):
     y_val = split_dictionary(y_data,  data_keys[last_index_train: last_index_val])
 
     x_test = split_dictionary(x_data,  data_keys[last_index_val: -1])
-    y_test = split_dictionary(x_data,  data_keys[last_index_val: -1])
+    y_test = split_dictionary(y_data,  data_keys[last_index_val: -1])
 
     train_generator = data_generator_from_path(x_train, y_train, batch_size=batch_size)
     val_generator = data_generator_from_path(x_val, y_val, batch_size=batch_size)
