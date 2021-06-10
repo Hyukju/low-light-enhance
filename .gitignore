@@ -1,2 +1,5 @@
 __pycache__/
 .vscode/
+test_code/weights
+test_code/test_result/
+

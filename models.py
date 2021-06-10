@@ -92,7 +92,7 @@ def data_generator_from_path(x_train, y_train, batch_size=4, use_random_crop=Tru
         yield x_batch, y_batch
 
 
-def buil_model(height, width, channel):
+def build_model(height, width, channel):
 
     input_img = keras.Input(shape=(height, width, channel))
 
@@ -171,7 +171,7 @@ def train(epochs=100, batch_size=10):
     print('epochs = ', epochs)
     print('-------------------------------------')
 
-    model = buil_model(None, None, 3)
+    model = build_model(None, None, 3)
     model.compile(optimizer='adam', loss='mse', metrics=['acc'])
     model.fit_generator(train_generator, 
                         steps_per_epoch=num_train_data//batch_size, 
