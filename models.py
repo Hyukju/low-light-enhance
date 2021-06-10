@@ -92,6 +92,46 @@ def data_generator_from_path(x_train, y_train, batch_size=4, use_random_crop=Tru
         yield x_batch, y_batch
 
 
+# def build_model(height, width, channel):
+
+#     input_img = keras.Input(shape=(height, width, channel))
+
+#     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(input_img) 
+#     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.MaxPooling2D((2, 2), padding='same')(x) 
+#     x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x) 
+#     x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.MaxPooling2D((2, 2), padding='same')(x)
+#     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.MaxPooling2D((2, 2), padding='same')(x)
+#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)   
+#     encoded = layers.MaxPooling2D((2, 2), padding='same')(x)
+
+#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(encoded)
+#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.UpSampling2D((2, 2))(x)
+#     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.UpSampling2D((2, 2))(x)
+#     x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.UpSampling2D((2, 2))(x)
+#     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.UpSampling2D((2, 2))(x)
+    
+#     x = layers.Conv2D(3, (3, 3), activation='relu', padding='same')(x)
+#     decoded = layers.Conv2D(3, (3, 3), activation='sigmoid', padding='same')(x)
+
+#     autoencoder = keras.Model(input_img, decoded)
+
+#     autoencoder.summary()
+
+#     return autoencoder
+
+
 def build_model(height, width, channel):
 
     input_img = keras.Input(shape=(height, width, channel))
@@ -112,6 +152,9 @@ def build_model(height, width, channel):
     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(encoded)
     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
     x = layers.UpSampling2D((2, 2))(x)
+    x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
+    x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
+    x = layers.UpSampling2D((2, 2))(x)
     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
     x = layers.UpSampling2D((2, 2))(x)
@@ -120,7 +163,6 @@ def build_model(height, width, channel):
     x = layers.UpSampling2D((2, 2))(x)
     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
-    x = layers.UpSampling2D((2, 2))(x)
     
     x = layers.Conv2D(3, (3, 3), activation='relu', padding='same')(x)
     decoded = layers.Conv2D(3, (3, 3), activation='sigmoid', padding='same')(x)
