@@ -234,6 +234,71 @@ def build_model(height, width, channel):
 
     return autoencoder
 
+
+def build_model_skip(height, width, channel):
+
+    input_layer = keras.Input(shape=(height, width, channel))
+    # down
+    x0 = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(input_layer) 
+    x0 = layers.BatchNormalization()(x0)
+    x0 = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x0)
+    x0 = layers.BatchNormalization()(x0)
+    p0 = layers.MaxPooling2D((2, 2), padding='same')(x0) 
+
+    x1 = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(p0) 
+    x1 = layers.BatchNormalization()(x1)
+    x1 = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x1)
+    x1 = layers.BatchNormalization()(x1)
+    p1 = layers.MaxPooling2D((2, 2), padding='same')(x1)
+
+    x2 = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(p1)
+    x2 = layers.BatchNormalization()(x2)
+    x2 = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x2)
+    x2 = layers.BatchNormalization()(x2)
+    p2 = layers.MaxPooling2D((2, 2), padding='same')(x2)
+
+    x3 = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(p2)
+    x3 = layers.BatchNormalization()(x3)
+    x3 = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x3)   
+    x3 = layers.BatchNormalization()(x3)
+    p3 = layers.MaxPooling2D((2, 2), padding='same')(x3)
+    # latent
+    x4 = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(p3)
+    x4 = layers.BatchNormalization()(x4)
+    x4 = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x4)
+    x4 = layers.BatchNormalization()(x4)
+    # up
+    u0 = layers.UpSampling2D((2, 2))(x4)
+    x5 = layers.concatenate([u0, x3])
+    x5 = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x5)
+    x5 = layers.BatchNormalization()(x5)
+    x5 = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x5)
+    x5 = layers.BatchNormalization()(x5)
+
+    u1 = layers.UpSampling2D((2, 2))(x5)
+    x6 = layers.concatenate([u1, x2])
+    x6 = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x6)
+    x6 = layers.BatchNormalization()(x6)
+    x6 = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x6)
+    x6 = layers.BatchNormalization()(x6)
+
+    u2 = layers.UpSampling2D((2, 2))(x6)    
+    x7 = layers.concatenate([u2, x1])
+    x7 = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x7)
+    x7 = layers.BatchNormalization()(x7)
+    x7 = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x7)
+    x7 = layers.BatchNormalization()(x7)
+
+    u3 = layers.UpSampling2D((2, 2))(x7)   
+    x8 = layers.concatenate([u3, x0])
+    x8 = layers.Conv2D(3, (3, 3), activation='relu', padding='same')(x8)
+    output_layer = layers.Conv2D(3, (3, 3), activation='sigmoid', padding='same')(x8)
+
+    autoencoder = keras.Model(input_layer, output_layer)
+    autoencoder.summary()
+
+    return autoencoder
+
 def split_dictionary(dict_data, split_key_list):
     splited_dict = {}
     for key in split_key_list:
@@ -274,14 +339,14 @@ def train(epochs=100, batch_size=10):
     print('epochs = ', epochs)
     print('-------------------------------------')
 
-    model = build_model(None, None, 3)
+    model = build_model_skip(None, None, 3)
     model.compile(optimizer='adam', loss='mse', metrics=['acc'])
     model.fit_generator(train_generator, 
                         steps_per_epoch=num_train_data//batch_size, 
                         epochs=epochs, 
                         validation_data=val_generator,
                         validation_steps=num_val_data//batch_size,
-                        callbacks=[keras.callbacks.ModelCheckpoint(filepath='./weights/my_model.{epoch:02d}.h5',verbose=0, save_weights_only=True, period=20)])
+                        callbacks=[keras.callbacks.ModelCheckpoint(filepath='./weights/my_model.{epoch:02d}.h5',verbose=0, save_weights_only=True, period=100)])
     
     return model, x_test, y_test
 
