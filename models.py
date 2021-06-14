@@ -132,43 +132,104 @@ def data_generator_from_path(x_train, y_train, batch_size=4, use_random_crop=Tru
 #     return autoencoder
 
 
+# def build_model(height, width, channel):
+
+#     input_img = keras.Input(shape=(height, width, channel))
+
+#     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(input_img) 
+#     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.MaxPooling2D((2, 2), padding='same')(x) 
+#     x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x) 
+#     x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.MaxPooling2D((2, 2), padding='same')(x)
+#     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.MaxPooling2D((2, 2), padding='same')(x)
+#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)   
+#     encoded = layers.MaxPooling2D((2, 2), padding='same')(x)
+
+#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(encoded)
+#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.UpSampling2D((2, 2))(x)
+#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.UpSampling2D((2, 2))(x)
+#     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.UpSampling2D((2, 2))(x)
+#     x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.UpSampling2D((2, 2))(x)
+#     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+#     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+    
+#     x = layers.Conv2D(3, (3, 3), activation='relu', padding='same')(x)
+#     decoded = layers.Conv2D(3, (3, 3), activation='sigmoid', padding='same')(x)
+
+#     autoencoder = keras.Model(input_img, decoded)
+
+#     autoencoder.summary()
+
+#     return autoencoder
+
 def build_model(height, width, channel):
 
-    input_img = keras.Input(shape=(height, width, channel))
+    input_layer = keras.Input(shape=(height, width, channel))
 
-    x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(input_img) 
+    x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(input_layer) 
+    x = layers.BatchNormalization()(x)
     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+    x = layers.BatchNormalization()(x)
     x = layers.MaxPooling2D((2, 2), padding='same')(x) 
+
     x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x) 
+    x = layers.BatchNormalization()(x)
     x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+    x = layers.BatchNormalization()(x)
     x = layers.MaxPooling2D((2, 2), padding='same')(x)
+
     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+    x = layers.BatchNormalization()(x)
     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+    x = layers.BatchNormalization()(x)
     x = layers.MaxPooling2D((2, 2), padding='same')(x)
+
     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
+    x = layers.BatchNormalization()(x)
     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)   
-    encoded = layers.MaxPooling2D((2, 2), padding='same')(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.MaxPooling2D((2, 2), padding='same')(x)
 
-    x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(encoded)
     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
-    x = layers.UpSampling2D((2, 2))(x)
+    x = layers.BatchNormalization()(x)
     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
-    x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
-    x = layers.UpSampling2D((2, 2))(x)
-    x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
-    x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
-    x = layers.UpSampling2D((2, 2))(x)
-    x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
-    x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
-    x = layers.UpSampling2D((2, 2))(x)
-    x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
-    x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+    x = layers.BatchNormalization()(x)
     
+    x = layers.UpSampling2D((2, 2))(x)
+    x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+    x = layers.BatchNormalization()(x)
+
+    x = layers.UpSampling2D((2, 2))(x)
+    x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+    x = layers.BatchNormalization()(x)
+
+    x = layers.UpSampling2D((2, 2))(x)    
+    x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+    x = layers.BatchNormalization()(x)
+
+    x = layers.UpSampling2D((2, 2))(x)   
     x = layers.Conv2D(3, (3, 3), activation='relu', padding='same')(x)
-    decoded = layers.Conv2D(3, (3, 3), activation='sigmoid', padding='same')(x)
+    output_layer = layers.Conv2D(3, (3, 3), activation='sigmoid', padding='same')(x)
 
-    autoencoder = keras.Model(input_img, decoded)
 
+    autoencoder = keras.Model(input_layer, output_layer)
     autoencoder.summary()
 
     return autoencoder
@@ -208,7 +269,7 @@ def train(epochs=100, batch_size=10):
 
     print('-------------------------------------')
     print('num of train data = ', num_train_data)
-    print('num of val data = ', num_train_data)
+    print('num of val data = ', num_val_data)
     print('batch size = ', batch_size)
     print('epochs = ', epochs)
     print('-------------------------------------')
@@ -220,7 +281,7 @@ def train(epochs=100, batch_size=10):
                         epochs=epochs, 
                         validation_data=val_generator,
                         validation_steps=num_val_data//batch_size,
-                        callbacks=[keras.callbacks.ModelCheckpoint(filepath='./weights/my_model.{epoch:02d}-{val_loss:.2f}.hdf5',verbose=0, save_weights_only=True, period=20)])
+                        callbacks=[keras.callbacks.ModelCheckpoint(filepath='./weights/my_model.{epoch:02d}.h5',verbose=0, save_weights_only=True, period=20)])
     
     return model, x_test, y_test
 
