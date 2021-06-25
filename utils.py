@@ -1,5 +1,10 @@
 import numpy as np 
 import os 
+import cv2
+import time 
+
+def get_local_time():    
+    return time.strftime('%Y-%m-%d-%H-%M', time.localtime(time.time()))
 
 def resize_image(img, resize_width, resize_height, mode='square'):
     assert mode in ['square', 'crop']
@@ -15,9 +20,10 @@ def get_random_crop_coordinate(img, crop_width, crop_height):
 def crop_image(img, crop_x, crop_y, crop_width, crop_height):
     return img[crop_y:crop_y+crop_height, crop_x:crop_x+crop_width, :]
 
-def load_dataset_sice():
+def load_dataset_sice(dataset_dir, dataset_type):
+    assert dataset_type in ['path', 'image']
 
-    dataset_dir = 'D:\\datasets\\SICE\\Dataset_Part1\\'
+    # dataset_dir= 'D:\\datasets\\SICE\\Dataset_Part1\\'
     dir_list = os.listdir(dataset_dir)
     dir_list.remove('Label')
 
@@ -34,7 +40,13 @@ def load_dataset_sice():
             if os.path.isfile(file_path):
                 x_img_path = file_path
                 y_img_path = os.path.join(dataset_dir, y_data_dir_list[0], dir_name + '.jpg')
-                x_data[dir_name] = x_img_path
-                y_data[dir_name] = y_img_path
+               
+                if dataset_type == 'path':                    
+                    x_data[dir_name] = x_img_path
+                    y_data[dir_name] = y_img_path
+                elif dataset_type == 'image':
+                    x_data[dir_name] = cv2.imread(x_img_path)
+                    y_data[dir_name] = cv2.imread(y_img_path)
 
     return x_data, y_data
+

@@ -4,62 +4,14 @@ import matplotlib.pyplot as plt
 import numpy as np 
 import utils
 import cv2
+import os 
 
 crop_width = 256
 crop_height = 256
 
-# def data_generator_from_path(x_train, y_train, batch_size=4, use_shuffle=True, use_random_crop=True):
-   
-#     # train_full_index = list(x_train.keys())
-#     train_size = len(x_train)
-#     train_full_index = np.arange(train_size)
-#     total_batch = train_size // batch_size - 1
+def data_generator(x_train, y_train, dataset_type='path', batch_size=4, use_random_crop=True):
+    assert dataset_type in ['path', 'image']
 
-#     current_batch = 0
-   
-#     while True:
-
-#         if (current_batch > total_batch):
-#             current_batch = 0
-        
-#         if use_shuffle and current_batch == 0:
-#                 # shuffle train ids
-#                 np.random.shuffle(train_full_index)
-#                 #print('batch full_ data shuffling')
-        
-#         current_index = current_batch * batch_size
-#         batch_mask = train_full_index[current_index:current_index + batch_size]
-
-      
-#         if use_random_crop:
-#             x_batch = np.zeros((batch_size, crop_height, crop_width ,3))
-#             y_batch = np.zeros((batch_size, crop_height, crop_width ,3))
-
-#             for i in range(batch_size):  
-#                 batch_mask_index = batch_mask[i]              
-#                 x_img = cv2.imread(x_train[batch_mask_index]) / 255.0
-#                 y_img = cv2.imread(y_train[batch_mask_index]) / 255.0
-#                 crop_x, crop_y = utils.get_random_crop_coordinate(x_img, crop_width, crop_height)
-#                 cropped_x_img = utils.crop_image(x_img, crop_x, crop_y, crop_width, crop_height)
-#                 cropped_y_img = utils.crop_image(y_img, crop_x, crop_y, crop_width, crop_height)
-
-#                 # ----------------
-#                 # augmentation?
-#                 # ----------------
-#                 x_batch[i] = cropped_x_img
-#                 y_batch[i] = cropped_y_img
-#         else:
-#             x_batch = cv2.imread(x_train[batch_mask])
-#             y_batch = cv2.imread(y_train[batch_mask])
-
-
-#         yield x_batch, y_batch
-        
-#         current_batch += 1
-
-
-def data_generator_from_path(x_train, y_train, batch_size=4, use_random_crop=True):
-   
     keys = list(x_train.keys())
     resize_width, resize_height = crop_width, crop_height
    
@@ -71,8 +23,13 @@ def data_generator_from_path(x_train, y_train, batch_size=4, use_random_crop=Tru
         y_batch = np.zeros((batch_size, crop_height, crop_width ,3))
 
         for i, key in enumerate(batch_keys):                              
-            x_img = cv2.imread(x_train[key]) 
-            y_img = cv2.imread(y_train[key]) 
+            if dataset_type == 'path':
+                x_img = cv2.imread(x_train[key]) 
+                y_img = cv2.imread(y_train[key]) 
+            elif dataset_type =='image':
+                x_img = x_train[key].copy()
+                y_img = y_train[key].copy()
+
             if use_random_crop:         
                 crop_x, crop_y = utils.get_random_crop_coordinate(x_img, crop_width, crop_height)
                 xx_img = utils.crop_image(x_img, crop_x, crop_y, crop_width, crop_height)
@@ -86,92 +43,10 @@ def data_generator_from_path(x_train, y_train, batch_size=4, use_random_crop=Tru
             # ----------------
             # augmentation?
             # ----------------
-            x_batch[i] = xx_img / 255.0
-            y_batch[i] = yy_img / 255.0
+            x_batch[i] = xx_img.astype('float32') / 255.0
+            y_batch[i] = yy_img.astype('float32') / 255.0
 
         yield x_batch, y_batch
-
-
-# def build_model(height, width, channel):
-
-#     input_img = keras.Input(shape=(height, width, channel))
-
-#     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(input_img) 
-#     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.MaxPooling2D((2, 2), padding='same')(x) 
-#     x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x) 
-#     x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.MaxPooling2D((2, 2), padding='same')(x)
-#     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.MaxPooling2D((2, 2), padding='same')(x)
-#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)   
-#     encoded = layers.MaxPooling2D((2, 2), padding='same')(x)
-
-#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(encoded)
-#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.UpSampling2D((2, 2))(x)
-#     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.UpSampling2D((2, 2))(x)
-#     x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.UpSampling2D((2, 2))(x)
-#     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.UpSampling2D((2, 2))(x)
-    
-#     x = layers.Conv2D(3, (3, 3), activation='relu', padding='same')(x)
-#     decoded = layers.Conv2D(3, (3, 3), activation='sigmoid', padding='same')(x)
-
-#     autoencoder = keras.Model(input_img, decoded)
-
-#     autoencoder.summary()
-
-#     return autoencoder
-
-
-# def build_model(height, width, channel):
-
-#     input_img = keras.Input(shape=(height, width, channel))
-
-#     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(input_img) 
-#     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.MaxPooling2D((2, 2), padding='same')(x) 
-#     x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x) 
-#     x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.MaxPooling2D((2, 2), padding='same')(x)
-#     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.MaxPooling2D((2, 2), padding='same')(x)
-#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)   
-#     encoded = layers.MaxPooling2D((2, 2), padding='same')(x)
-
-#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(encoded)
-#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.UpSampling2D((2, 2))(x)
-#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.UpSampling2D((2, 2))(x)
-#     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.UpSampling2D((2, 2))(x)
-#     x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.UpSampling2D((2, 2))(x)
-#     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
-#     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
-    
-#     x = layers.Conv2D(3, (3, 3), activation='relu', padding='same')(x)
-#     decoded = layers.Conv2D(3, (3, 3), activation='sigmoid', padding='same')(x)
-
-#     autoencoder = keras.Model(input_img, decoded)
-
-#     autoencoder.summary()
-
-#     return autoencoder
 
 def build_model(height, width, channel):
 
@@ -234,8 +109,7 @@ def build_model(height, width, channel):
 
     return autoencoder
 
-
-def build_model_skip(height, width, channel):
+def build_skip_model(height, width, channel):
 
     input_layer = keras.Input(shape=(height, width, channel))
     # down
@@ -270,27 +144,32 @@ def build_model_skip(height, width, channel):
     # up
     u0 = layers.UpSampling2D((2, 2))(x4)
     x5 = layers.concatenate([u0, x3])
-    x5 = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x5)
+    x5 = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x5)
     x5 = layers.BatchNormalization()(x5)
-    x5 = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x5)
+    x5 = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x5)
     x5 = layers.BatchNormalization()(x5)
 
     u1 = layers.UpSampling2D((2, 2))(x5)
     x6 = layers.concatenate([u1, x2])
-    x6 = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x6)
+    x6 = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x6)
     x6 = layers.BatchNormalization()(x6)
-    x6 = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x6)
+    x6 = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(x6)
     x6 = layers.BatchNormalization()(x6)
 
     u2 = layers.UpSampling2D((2, 2))(x6)    
     x7 = layers.concatenate([u2, x1])
-    x7 = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x7)
+    x7 = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x7)
     x7 = layers.BatchNormalization()(x7)
-    x7 = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x7)
+    x7 = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x7)
     x7 = layers.BatchNormalization()(x7)
 
     u3 = layers.UpSampling2D((2, 2))(x7)   
     x8 = layers.concatenate([u3, x0])
+    x8 = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x8)
+    x8 = layers.BatchNormalization()(x8)
+    x8 = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x8)
+    x8 = layers.BatchNormalization()(x8)
+    
     x8 = layers.Conv2D(3, (3, 3), activation='relu', padding='same')(x8)
     output_layer = layers.Conv2D(3, (3, 3), activation='sigmoid', padding='same')(x8)
 
@@ -306,9 +185,11 @@ def split_dictionary(dict_data, split_key_list):
     return splited_dict
 
 
-def train(epochs=100, batch_size=10):    
+def train(dataset_dir, dataset_type='path', epochs=100, batch_size=10, use_random_crop=True, loss='mae', save_weight_dir=None):    
 
-    x_data, y_data = utils.load_dataset_sice()
+    assert dataset_type in ['path', 'image']
+    
+    x_data, y_data = utils.load_dataset_sice(dataset_dir, dataset_type)
     
     data_keys = list(x_data.keys())
 
@@ -325,8 +206,9 @@ def train(epochs=100, batch_size=10):
     x_test = split_dictionary(x_data,  data_keys[last_index_val: -1])
     y_test = split_dictionary(y_data,  data_keys[last_index_val: -1])
 
-    train_generator = data_generator_from_path(x_train, y_train, batch_size=batch_size)
-    val_generator = data_generator_from_path(x_val, y_val, batch_size=batch_size)
+    train_generator = data_generator(x_train, y_train, dataset_type, batch_size=batch_size, use_random_crop=use_random_crop)
+    val_generator = data_generator(x_val, y_val, dataset_type, batch_size=batch_size, use_random_crop=use_random_crop)
+    
 
     #
     num_train_data = len(x_train)
@@ -339,21 +221,35 @@ def train(epochs=100, batch_size=10):
     print('epochs = ', epochs)
     print('-------------------------------------')
 
-    model = build_model_skip(None, None, 3)
-    model.compile(optimizer='adam', loss='mse', metrics=['acc'])
+    try:
+        # make weights dir
+        if save_weight_dir == None:
+            local_time = utils.get_local_time()
+            os.makedirs(os.path.join('./weights',local_time))
+        else:
+            os.makedirs(os.path.join('./weights',save_weight_dir))
+    except:
+        pass
+
+    save_weight_file = os.path.join('./weights', save_weight_dir, 'my_model.{epoch:02d}.h5')
+
+
+    model = build_skip_model2(None, None, 3)
+    model.compile(optimizer='adam', loss=loss, metrics=['acc'])
     model.fit_generator(train_generator, 
                         steps_per_epoch=num_train_data//batch_size, 
                         epochs=epochs, 
                         validation_data=val_generator,
                         validation_steps=num_val_data//batch_size,
-                        callbacks=[keras.callbacks.ModelCheckpoint(filepath='./weights/my_model.{epoch:02d}.h5',verbose=0, save_weights_only=True, period=100)])
+                        callbacks=[keras.callbacks.ModelCheckpoint(filepath=save_weight_file,verbose=0, save_weights_only=True, period=100)])
     
     return model, x_test, y_test
 
 
-
 if __name__=='__main__':
-    train()
+    dataset_dir = 'D:\\projects\\_datasets\\SICE\\Dataset_Part1\\'    
+    train(dataset_dir, dataset_type='image', epochs=1000, batch_size=16,use_random_crop=False, loss= 'mae',save_weight_dir='rgb_mae_model2_resize')    
+    train(dataset_dir, dataset_type='image', epochs=1000, batch_size=16,use_random_crop=False, loss= 'mse',save_weight_dir='rgb_mse_model2_resize')    
     
     
 
