@@ -234,7 +234,7 @@ def train(dataset_dir, dataset_type='path', epochs=100, batch_size=10, use_rando
     save_weight_file = os.path.join('./weights', save_weight_dir, 'my_model.{epoch:02d}.h5')
 
 
-    model = build_skip_model2(None, None, 3)
+    model = build_skip_model(None, None, 3)
     model.compile(optimizer='adam', loss=loss, metrics=['acc'])
     model.fit_generator(train_generator, 
                         steps_per_epoch=num_train_data//batch_size, 
